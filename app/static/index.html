@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0f14" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%230b0f14'/><path d='M32 8l18 8v14c0 14-8 25-18 28C22 55 14 44 14 30V16l18-8z' fill='%236ee7ff' fill-opacity='0.85'/></svg>">
   <title>Agora Market Operator — Demo</title>
   <style>
@@ -59,6 +60,12 @@
 
     pre { margin: 0; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: auto; font-family: var(--mono); font-size: 12px; line-height: 1.4; }
 
+    details { margin-top: 10px; }
+    summary { cursor: pointer; color: var(--text); font-weight: 750; font-size: 12px; }
+    summary::-webkit-details-marker { display:none; }
+    summary:before { content: '▸'; display:inline-block; margin-right:8px; color: var(--muted); }
+    details[open] summary:before { content: '▾'; }
+
     .status { font-family: var(--mono); font-size: 12px; color: var(--muted); }
     .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; margin-left: 8px; font-family: var(--mono); font-size: 12px; }
     .pill.ok { background: rgba(98,255,160,0.14); border: 1px solid rgba(98,255,160,0.35); color: var(--ok); }
@@ -99,6 +106,7 @@
       .toolbar { flex-direction: column; align-items: stretch; }
       .toolbar input { min-width: 0; width: 100%; }
       pre { font-size: 11px; }
+      #out { max-height: 44vh; }
 
       /* Make Run demo always reachable without scrolling */
       .runbar {
@@ -213,7 +221,10 @@
         <button id="fetch_audit" class="btn-sm" type="button">Fetch audit</button>
       </div>
 
-      <pre id="audits" style="margin-top: 10px; color: var(--muted);">(audits will appear here)</pre>
+      <details>
+        <summary>Audit history (tap to expand)</summary>
+        <pre id="audits" style="margin-top: 10px; color: var(--muted);">(audits will appear here)</pre>
+      </details>
     </section>
   </main>
 
