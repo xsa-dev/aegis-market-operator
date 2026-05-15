@@ -23,7 +23,7 @@
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
     *, *::before, *::after { box-sizing: border-box; }
-    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; -webkit-text-size-adjust: 100%; }
     header { padding: 18px 20px; border-bottom: 1px solid var(--border-2); }
     header h1 { margin: 0; font-size: 16px; letter-spacing: 0.2px; }
     header .sub { margin-top: 6px; color: var(--muted); font-size: 12px; }
@@ -98,9 +98,10 @@
       header { padding: 14px 14px; }
       header h1 { font-size: 15px; }
       main { padding: 14px 14px; }
-      .card { padding: 12px; border-radius: 14px; }
+      .card { padding: 12px; border-radius: 14px; overflow: hidden; }
       label { font-size: 12px; }
-      input { padding: 12px; font-size: 14px; border-radius: 12px; }
+      /* iOS Safari: keep inputs >=16px to avoid auto-zoom on focus */
+      input { padding: 12px; font-size: 16px; border-radius: 12px; }
       button { padding: 12px; border-radius: 12px; }
       .btn-row { gap: 8px; }
       .btn-sm { padding: 10px 12px; font-size: 13px; }
