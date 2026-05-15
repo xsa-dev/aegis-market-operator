@@ -75,13 +75,33 @@
       .runbar {
         position: sticky;
         bottom: 0;
-        background: linear-gradient(180deg, rgba(11,15,20,0.10), rgba(11,15,20,0.85));
-        padding: 10px 0 6px;
+        background: linear-gradient(180deg, rgba(11,15,20,0.10), rgba(11,15,20,0.92));
+        padding: 10px 0 calc(6px + env(safe-area-inset-bottom));
         margin-top: 10px;
         z-index: 4;
         backdrop-filter: blur(6px);
       }
       .runbar button { margin-top: 0; }
+    }
+
+    /* iPhone-ish polish */
+    @media (max-width: 480px) {
+      header { padding: 14px 14px; }
+      header h1 { font-size: 15px; }
+      main { padding: 14px 14px; }
+      .card { padding: 12px; border-radius: 14px; }
+      label { font-size: 12px; }
+      input { padding: 12px; font-size: 14px; border-radius: 12px; }
+      button { padding: 12px; border-radius: 12px; }
+      .btn-row { gap: 8px; }
+      .btn-sm { padding: 10px 12px; font-size: 13px; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .toolbar input { min-width: 0; width: 100%; }
+      pre { font-size: 11px; }
+
+      /* Keep chips from wrapping into a tall blob on mobile */
+      .flow { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .chip { white-space: nowrap; }
     }
   </style>
 </head>
@@ -138,7 +158,7 @@
         <div class="runbar">
           <button id="run" type="button">Run demo</button>
           <div class="status" style="margin-top: 0; white-space: nowrap;">
-            <span id="decision" class="pill" style="display:none"></span>
+            <span id="decision_run" class="pill" style="display:none"></span>
             <span>status:</span> <span id="status">idle</span>
           </div>
         </div>
@@ -165,7 +185,7 @@
 
       <div class="status" style="margin-top: 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <div>audit_id: <span id="audit_id" style="color: var(--text);"></span></div>
-        <span id="decision" class="pill" style="display:none;"></span>
+        <span id="decision_result" class="pill" style="display:none;"></span>
         <button id="copy_audit" class="btn-sm btn-tertiary" type="button" style="display:none;">Copy audit_id</button>
       </div>
 
@@ -183,14 +203,18 @@
   const el = (id) => document.getElementById(id);
 
   function setDecisionPill(decision) {
-    const pill = el('decision');
-    pill.style.display = 'inline-block';
-    pill.textContent = decision;
-    pill.className = 'pill ' + (
-      decision === 'SCALE' ? 'ok' :
-      decision === 'OBSERVE' ? 'warn' :
-      'bad'
-    );
+    const ids = ['decision_run', 'decision_result'];
+    for (const id of ids) {
+      const pill = el(id);
+      if (!pill) continue;
+      pill.style.display = 'inline-block';
+      pill.textContent = decision;
+      pill.className = 'pill ' + (
+        decision === 'SCALE' ? 'ok' :
+        decision === 'OBSERVE' ? 'warn' :
+        'bad'
+      );
+    }
   }
 
   function setInputs(p) {
@@ -259,7 +283,8 @@
 
   el('run').addEventListener('click', async () => {
     el('status').textContent = 'running...';
-    el('decision').style.display = 'none';
+    if (el('decision_run')) el('decision_run').style.display = 'none';
+    if (el('decision_result')) el('decision_result').style.display = 'none';
     el('copy_audit').style.display = 'none';
 
     const payload = {
