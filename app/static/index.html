@@ -86,6 +86,7 @@
 
     /* iPhone-ish polish */
     @media (max-width: 480px) {
+      body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
       header { padding: 14px 14px; }
       header h1 { font-size: 15px; }
       main { padding: 14px 14px; }
@@ -98,6 +99,23 @@
       .toolbar { flex-direction: column; align-items: stretch; }
       .toolbar input { min-width: 0; width: 100%; }
       pre { font-size: 11px; }
+
+      /* Make Run demo always reachable without scrolling */
+      .runbar {
+        position: fixed;
+        left: 14px;
+        right: 14px;
+        bottom: 0;
+        margin: 0;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        border-radius: 16px 16px 0 0;
+        border: 1px solid var(--border-2);
+        background: linear-gradient(180deg, rgba(15,22,32,0.65), rgba(11,15,20,0.96));
+        box-shadow: 0 -18px 40px rgba(0,0,0,0.45);
+        backdrop-filter: blur(10px);
+      }
+      .runbar button { width: auto; flex: 1; }
+      .runbar .status { text-align: right; }
 
       /* Keep chips from wrapping into a tall blob on mobile */
       .flow { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -328,7 +346,7 @@
   try {
     const params = new URLSearchParams(window.location.search);
     if (params.get('scroll') === 'bottom') {
-      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 250);
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 900);
     }
   } catch (_) {}
 
