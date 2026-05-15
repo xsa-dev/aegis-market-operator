@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%230b0f14'/><path d='M32 8l18 8v14c0 14-8 25-18 28C22 55 14 44 14 30V16l18-8z' fill='%236ee7ff' fill-opacity='0.85'/></svg>">
+  <title>Agora Market Operator — Demo</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #0f1620;
+      --panel-2: #0c121a;
+      --text: #d7e1ee;
+      --muted: #8aa0b8;
+      --accent: #6ee7ff;
+      --ok: #62ffa0;
+      --warn: #ffd36e;
+      --bad: #ff6e6e;
+      --border: rgba(255,255,255,0.10);
+      --border-2: rgba(255,255,255,0.06);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); }
+    header { padding: 18px 20px; border-bottom: 1px solid var(--border-2); }
+    header h1 { margin: 0; font-size: 16px; letter-spacing: 0.2px; }
+    header .sub { margin-top: 6px; color: var(--muted); font-size: 12px; }
+
+    main { padding: 18px 20px; display: grid; gap: 14px; grid-template-columns: 360px 1fr; }
+    .card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid var(--border-2); border-radius: 12px; padding: 14px; }
+    .card h2 { margin: 0 0 10px 0; font-size: 14px; color: var(--text); font-weight: 750; }
+    .hint { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-2); }
+
+    label { display: block; font-size: 12px; color: #aab8c8; margin: 10px 0 6px; }
+    input { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--text); font-family: var(--mono); font-size: 13px; }
+
+    button { margin-top: 12px; width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(110,231,255,0.4); background: rgba(110,231,255,0.12); color: var(--text); cursor: pointer; font-weight: 750; }
+    button:hover { background: rgba(110,231,255,0.16); }
+
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-sm { width: auto; padding: 7px 10px; border-radius: 999px; font-weight: 750; font-size: 12px; margin: 0; }
+    .btn-tertiary { border-color: var(--border); background: rgba(255,255,255,0.04); }
+    .btn-tertiary:hover { background: rgba(255,255,255,0.06); }
+
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+    .toolbar input { flex: 1; min-width: 240px; }
+
+    .runbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .chip { padding: 6px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); font-size: 12px; color: var(--muted); }
+    .chip strong { color: var(--text); }
+
+    pre { margin: 0; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: auto; font-family: var(--mono); font-size: 12px; line-height: 1.4; }
+
+    .status { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; margin-left: 8px; font-family: var(--mono); font-size: 12px; }
+    .pill.ok { background: rgba(98,255,160,0.14); border: 1px solid rgba(98,255,160,0.35); color: var(--ok); }
+    .pill.warn { background: rgba(255,211,110,0.14); border: 1px solid rgba(255,211,110,0.35); color: var(--warn); }
+    .pill.bad { background: rgba(255,110,110,0.14); border: 1px solid rgba(255,110,110,0.35); color: var(--bad); }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: 1fr; }
+      header { position: sticky; top: 0; background: var(--bg); z-index: 5; }
+      .toolbar { gap: 8px; }
+      .toolbar input { min-width: 180px; }
+
+      /* Make the primary action always reachable during a demo */
+      .runbar {
+        position: sticky;
+        bottom: 0;
+        background: linear-gradient(180deg, rgba(11,15,20,0.10), rgba(11,15,20,0.85));
+        padding: 10px 0 6px;
+        margin-top: 10px;
+        z-index: 4;
+        backdrop-filter: blur(6px);
+      }
+      .runbar button { margin-top: 0; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Agora Market Operator — Minimal Demo</h1>
+    <div class="sub">signal → reasoning → risk gate → execution → Arc/USDC settlement → audit trail (all safe mocks)</div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Inputs</h2>
+      <div class="hint">Pick a preset (SCALE / OBSERVE / DISABLE), then run the end-to-end pipeline. All actions are safe mocks.</div>
+
+      <div class="section">
+        <div class="status" style="margin-bottom: 8px;">preset</div>
+        <div class="btn-row">
+          <button class="btn-sm btn-tertiary" id="preset_scale" type="button">SCALE</button>
+          <button class="btn-sm btn-tertiary" id="preset_observe" type="button">OBSERVE</button>
+          <button class="btn-sm btn-tertiary" id="preset_disable" type="button">DISABLE</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="status" style="margin-bottom: 8px;">market</div>
+      <label>symbol</label>
+      <input id="symbol" value="BTCUSDT" />
+
+      <label>price</label>
+      <input id="price" type="number" step="0.01" value="68000" />
+
+      <label>funding_rate</label>
+      <input id="funding" type="number" step="0.000001" value="0.0001" />
+
+      </div>
+
+      <div class="section">
+        <div class="status" style="margin-bottom: 8px;">risk params</div>
+
+      <label>dd (drawdown 0..1)</label>
+      <input id="dd" type="number" step="0.01" value="0.08" />
+
+      <label>top2_concentration (0..1)</label>
+      <input id="top2" type="number" step="0.01" value="0.42" />
+
+      <label>fee_drag (0..1)</label>
+      <input id="fee" type="number" step="0.01" value="0.12" />
+
+      <div class="hint">Tip: DISABLE triggers when dd &gt; 0.20. SCALE triggers when the signal is strong and risk is within limits.</div>
+
+      </div>
+
+      <div class="section">
+        <div class="runbar">
+          <button id="run" type="button">Run demo</button>
+          <div class="status" style="margin-top: 0; white-space: nowrap;">
+            <span id="decision" class="pill" style="display:none"></span>
+            <span>status:</span> <span id="status">idle</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow" style="margin-top: 14px;">
+        <div class="chip"><strong>signal</strong></div>
+        <div class="chip"><strong>reason</strong></div>
+        <div class="chip"><strong>risk gate</strong></div>
+        <div class="chip"><strong>execute</strong></div>
+        <div class="chip"><strong>settle</strong></div>
+        <div class="chip"><strong>audit</strong></div>
+      </div>
+
+      
+    </section>
+
+    <section class="card">
+      <h2>Result JSON</h2>
+      <pre id="out">Click “Run demo” to generate an end-to-end trace.</pre>
+
+      <div class="status" style="margin-top: 10px;">
+        audit_id: <span id="audit_id" style="color: var(--text);"></span>
+      </div>
+
+      <div class="toolbar">
+        <button id="refresh_audits" class="btn-sm btn-tertiary" type="button">Refresh audits</button>
+        <input id="audit_lookup" placeholder="paste audit_id" />
+        <button id="fetch_audit" class="btn-sm" type="button">Fetch audit</button>
+      </div>
+
+      <pre id="audits" style="margin-top: 10px; color: var(--muted);">(audits will appear here)</pre>
+    </section>
+  </main>
+
+<script>
+  const el = (id) => document.getElementById(id);
+
+  function setDecisionPill(decision) {
+    const pill = el('decision');
+    pill.style.display = 'inline-block';
+    pill.textContent = decision;
+    pill.className = 'pill ' + (
+      decision === 'SCALE' ? 'ok' :
+      decision === 'OBSERVE' ? 'warn' :
+      'bad'
+    );
+  }
+
+  function setInputs(p) {
+    el('symbol').value = p.symbol;
+    el('price').value = p.price;
+    el('funding').value = p.funding_rate;
+    el('dd').value = p.dd;
+    el('top2').value = p.top2_concentration;
+    el('fee').value = p.fee_drag;
+  }
+
+  const PRESETS = {
+    SCALE:   { symbol: 'BTCUSDT', price: 68000, funding_rate: -0.0003, dd: 0.08, top2_concentration: 0.42, fee_drag: 0.12 },
+    OBSERVE: { symbol: 'BTCUSDT', price: 68000, funding_rate:  0.0001, dd: 0.08, top2_concentration: 0.42, fee_drag: 0.12 },
+    DISABLE: { symbol: 'BTCUSDT', price: 68000, funding_rate:  0.0001, dd: 0.25, top2_concentration: 0.42, fee_drag: 0.12 }
+  };
+
+  el('preset_scale').addEventListener('click', () => setInputs(PRESETS.SCALE));
+  el('preset_observe').addEventListener('click', () => setInputs(PRESETS.OBSERVE));
+  el('preset_disable').addEventListener('click', () => setInputs(PRESETS.DISABLE));
+
+  async function refreshAudits() {
+    try {
+      const res = await fetch('/api/audits?limit=20');
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data));
+      el('audits').textContent = JSON.stringify(data, null, 2);
+    } catch (e) {
+      el('audits').textContent = 'failed to load audits: ' + String(e);
+    }
+  }
+
+  el('refresh_audits').addEventListener('click', refreshAudits);
+
+  el('fetch_audit').addEventListener('click', async () => {
+    const id = el('audit_lookup').value.trim();
+    if (!id) return;
+    try {
+      const res = await fetch('/api/audit/' + id);
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data));
+      el('out').textContent = JSON.stringify(data.result, null, 2);
+      el('audit_id').textContent = data.id;
+      setDecisionPill((data.result && data.result.risk && data.result.risk.decision) || 'OBSERVE');
+    } catch (e) {
+      el('out').textContent = String(e);
+    }
+  });
+
+  el('run').addEventListener('click', async () => {
+    el('status').textContent = 'running...';
+    el('decision').style.display = 'none';
+
+    const payload = {
+      symbol: el('symbol').value,
+      price: Number(el('price').value),
+      funding_rate: Number(el('funding').value),
+      dd: Number(el('dd').value),
+      top2_concentration: Number(el('top2').value),
+      fee_drag: Number(el('fee').value)
+    };
+
+    try {
+      const res = await fetch('/api/run_demo', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data));
+
+      el('out').textContent = JSON.stringify(data, null, 2);
+      el('audit_id').textContent = data.audit_id;
+      el('audit_lookup').value = data.audit_id;
+      el('status').textContent = 'ok';
+      setDecisionPill(data.risk.decision);
+      refreshAudits();
+    } catch (e) {
+      el('status').textContent = 'error';
+      el('out').textContent = String(e);
+    }
+  });
+
+  // initial load
+  refreshAudits();
+  setInputs(PRESETS.OBSERVE);
+
+  // For QA / screenshots: allow auto-scroll via query string.
+  // Example: /?scroll=bottom
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('scroll') === 'bottom') {
+      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 250);
+    }
+  } catch (_) {}
+
+</script>
+</body>
+</html>
