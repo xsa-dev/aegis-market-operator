@@ -73,6 +73,22 @@
     .pill.warn { background: rgba(255,211,110,0.14); border: 1px solid rgba(255,211,110,0.35); color: var(--warn); }
     .pill.bad { background: rgba(255,110,110,0.14); border: 1px solid rgba(255,110,110,0.35); color: var(--bad); }
 
+    .summary {
+      margin-top: 10px;
+      border: 1px solid var(--border-2);
+      border-radius: 12px;
+      background: rgba(0,0,0,0.18);
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+    .summary-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .k { color: var(--muted); font-family: var(--mono); font-size: 12px; }
+    .v { color: var(--text); font-family: var(--mono); font-size: 12px; }
+    .why { color: var(--text); font-size: 12px; line-height: 1.35; }
+    .toggle-row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .toggle-row .btn-sm { margin: 0; }
+
     @media (max-width: 900px) {
       main { grid-template-columns: 1fr; }
       header { position: sticky; top: 0; background: var(--bg); z-index: 5; }
@@ -109,6 +125,8 @@
       .toolbar input { min-width: 0; width: 100%; }
       pre { font-size: 11px; }
       #out { max-height: 44vh; }
+      .summary { padding: 10px; }
+      .why { font-size: 12px; }
 
       /* Make Run demo always reachable without scrolling */
       .runbar {
@@ -209,7 +227,22 @@
       <div class="sub" style="margin-top:-6px; margin-bottom: 10px; color: var(--muted);">
         Primary output appears here after <strong>Run demo</strong>. Audits below are for lookup/history.
       </div>
-      <pre id="out">Click “Run demo” to generate an end-to-end trace.</pre>
+
+      <div id="summary" class="summary" style="display:none;">
+        <div class="toggle-row">
+          <div class="summary-row">
+            <span class="k">decision</span> <span id="s_decision" class="v">—</span>
+            <span class="k">size</span> <span id="s_size" class="v">—</span>
+          </div>
+          <button id="toggle_json" class="btn-sm btn-tertiary" type="button">Show full JSON</button>
+        </div>
+        <div class="summary-row">
+          <span class="k">audit_id</span> <span id="s_audit" class="v">—</span>
+        </div>
+        <div class="why" id="s_why">—</div>
+      </div>
+
+      <pre id="out" style="display:none;">Click “Run demo” to generate an end-to-end trace.</pre>
 
       <div class="status" style="margin-top: 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
         <div>audit_id: <span id="audit_id" style="color: var(--text);"></span></div>
@@ -291,10 +324,43 @@
       el('audit_id').textContent = data.id;
       el('copy_audit').style.display = 'inline-flex';
       setDecisionPill((data.result && data.result.risk && data.result.risk.decision) || 'OBSERVE');
+      setSummaryFromResult({ ...(data.result || {}), audit_id: data.id });
+      setJsonVisible(false);
     } catch (e) {
       el('out').textContent = String(e);
     }
   });
+
+  // Summary + JSON toggle
+  let jsonVisible = false;
+  function setJsonVisible(v) {
+    jsonVisible = !!v;
+    el('out').style.display = jsonVisible ? 'block' : 'none';
+    el('toggle_json').textContent = jsonVisible ? 'Hide full JSON' : 'Show full JSON';
+  }
+
+  el('toggle_json').addEventListener('click', () => setJsonVisible(!jsonVisible));
+
+  function setSummaryFromResult(result) {
+    // decision
+    const decision = result?.risk?.decision || 'OBSERVE';
+
+    // size
+    const order = (result?.execution?.orders && result.execution.orders[0]) || null;
+    const size = order?.notional_usd ? `$${order.notional_usd}` : '—';
+
+    // why (compact)
+    const reasons = (result?.risk?.reasons || []).slice(0, 2);
+    const memo = result?.memo?.proposed_action ? result.memo.proposed_action : '';
+    const why = reasons.length ? reasons.join(' · ') : (memo || '—');
+
+    el('s_decision').textContent = decision;
+    el('s_size').textContent = size;
+    el('s_audit').textContent = result?.audit_id || '—';
+    el('s_why').textContent = why;
+
+    el('summary').style.display = 'grid';
+  }
 
   // Copy audit_id convenience
   el('copy_audit').addEventListener('click', async () => {
@@ -343,6 +409,8 @@
       el('copy_audit').style.display = 'inline-flex';
       el('status').textContent = 'ok';
       setDecisionPill(data.risk.decision);
+      setSummaryFromResult(data);
+      setJsonVisible(false);
       refreshAudits();
     } catch (e) {
       el('status').textContent = 'error';
