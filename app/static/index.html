@@ -158,10 +158,15 @@
 
     <section class="card">
       <h2>Result JSON</h2>
+      <div class="sub" style="margin-top:-6px; margin-bottom: 10px; color: var(--muted);">
+        Primary output appears here after <strong>Run demo</strong>. Audits below are for lookup/history.
+      </div>
       <pre id="out">Click “Run demo” to generate an end-to-end trace.</pre>
 
-      <div class="status" style="margin-top: 10px;">
-        audit_id: <span id="audit_id" style="color: var(--text);"></span>
+      <div class="status" style="margin-top: 10px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div>audit_id: <span id="audit_id" style="color: var(--text);"></span></div>
+        <span id="decision" class="pill" style="display:none;"></span>
+        <button id="copy_audit" class="btn-sm btn-tertiary" type="button" style="display:none;">Copy audit_id</button>
       </div>
 
       <div class="toolbar">
@@ -229,15 +234,33 @@
       if (!res.ok) throw new Error(JSON.stringify(data));
       el('out').textContent = JSON.stringify(data.result, null, 2);
       el('audit_id').textContent = data.id;
+      el('copy_audit').style.display = 'inline-flex';
       setDecisionPill((data.result && data.result.risk && data.result.risk.decision) || 'OBSERVE');
     } catch (e) {
       el('out').textContent = String(e);
     }
   });
 
+  // Copy audit_id convenience
+  el('copy_audit').addEventListener('click', async () => {
+    const v = (el('audit_id').textContent || '').trim();
+    if (!v) return;
+    try {
+      await navigator.clipboard.writeText(v);
+      el('status').textContent = 'copied audit_id';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied audit_id') el('status').textContent = 'idle';
+      }, 1200);
+    } catch (e) {
+      // Fallback: populate lookup field
+      el('audit_lookup').value = v;
+    }
+  });
+
   el('run').addEventListener('click', async () => {
     el('status').textContent = 'running...';
     el('decision').style.display = 'none';
+    el('copy_audit').style.display = 'none';
 
     const payload = {
       symbol: el('symbol').value,
@@ -261,6 +284,7 @@
       el('out').textContent = JSON.stringify(data, null, 2);
       el('audit_id').textContent = data.audit_id;
       el('audit_lookup').value = data.audit_id;
+      el('copy_audit').style.display = 'inline-flex';
       el('status').textContent = 'ok';
       setDecisionPill(data.risk.decision);
       refreshAudits();
