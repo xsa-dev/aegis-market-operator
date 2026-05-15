@@ -222,7 +222,7 @@
       
     </section>
 
-    <section class="card">
+    <section class="card" id="result_card">
       <h2>Result JSON</h2>
       <div class="sub" style="margin-top:-6px; margin-bottom: 10px; color: var(--muted);">
         Primary output appears here after <strong>Run demo</strong>. Audits below are for lookup/history.
@@ -411,6 +411,8 @@
       setDecisionPill(data.risk.decision);
       setSummaryFromResult(data);
       setJsonVisible(false);
+      // On iPhone, jump user to the summary/result (demo-friendly)
+      try { if (window.innerWidth <= 480) el('result_card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
       refreshAudits();
     } catch (e) {
       el('status').textContent = 'error';
@@ -426,8 +428,12 @@
   // Example: /?scroll=bottom
   try {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('scroll') === 'bottom') {
+    const s = params.get('scroll');
+    if (s === 'bottom') {
       setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 900);
+    }
+    if (s === 'result') {
+      setTimeout(() => el('result_card')?.scrollIntoView({ block: 'start' }), 900);
     }
   } catch (_) {}
 
