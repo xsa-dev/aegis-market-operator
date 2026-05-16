@@ -3,24 +3,92 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b0f14" />
+  <meta name="color-scheme" content="light dark" />
+  <!-- theme-color follows system theme (light/dark) -->
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0f14" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f8fb" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' fill='%230b0f14'/><path d='M32 8l18 8v14c0 14-8 25-18 28C22 55 14 44 14 30V16l18-8z' fill='%236ee7ff' fill-opacity='0.85'/></svg>">
   <title>Agora Market Operator — Demo</title>
   <style>
+    /*
+      Theme: auto-switches by system setting.
+      Default variables are light; dark overrides via prefers-color-scheme.
+    */
     :root {
-      --bg: #0b0f14;
-      --panel: #0f1620;
-      --panel-2: #0c121a;
-      --text: #d7e1ee;
-      --muted: #8aa0b8;
-      --accent: #6ee7ff;
-      --ok: #62ffa0;
-      --warn: #ffd36e;
-      --bad: #ff6e6e;
-      --border: rgba(255,255,255,0.10);
-      --border-2: rgba(255,255,255,0.06);
+      /* light */
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --panel-2: #f3f5f9;
+      --text: #0b1220;
+      --muted: #4a5a70;
+      --accent: #0ea5e9;
+      --ok: #0f9d58;
+      --warn: #b45309;
+      --bad: #dc2626;
+      --border: rgba(10, 20, 40, 0.12);
+      --border-2: rgba(10, 20, 40, 0.08);
+
+      --input-bg: rgba(10, 20, 40, 0.04);
+      --pre-bg: rgba(10, 20, 40, 0.04);
+      --summary-bg: rgba(10, 20, 40, 0.03);
+
+      /* controls */
+      --btn-primary-bg: rgba(14,165,233,0.14);
+      --btn-primary-hover-bg: rgba(14,165,233,0.18);
+      --btn-primary-border: rgba(14,165,233,0.38);
+      --btn-primary-text: #07111d;
+
+      --btn-tertiary-bg: rgba(10,20,40,0.035);
+      --btn-tertiary-hover-bg: rgba(10,20,40,0.06);
+      --btn-tertiary-border: rgba(10,20,40,0.14);
+      --btn-tertiary-text: var(--text);
+
+      --runbar-bg: linear-gradient(180deg, rgba(247,248,251,0.72), rgba(247,248,251,0.96));
+      --runbar-bg-iphone: linear-gradient(180deg, rgba(255,255,255,0.88), rgba(247,248,251,0.98));
+      --runbar-shadow: 0 -14px 28px rgba(10,20,40,0.10);
+      --runbar-blur: 6px;
+      --runbar-blur-iphone: 10px;
+
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        /* dark */
+        --bg: #0b0f14;
+        --panel: #0f1620;
+        --panel-2: #0c121a;
+        --text: #d7e1ee;
+        --muted: #8aa0b8;
+        --accent: #6ee7ff;
+        --ok: #62ffa0;
+        --warn: #ffd36e;
+        --bad: #ff6e6e;
+        --border: rgba(255,255,255,0.10);
+        --border-2: rgba(255,255,255,0.06);
+
+        --input-bg: rgba(0,0,0,0.25);
+        --pre-bg: rgba(0,0,0,0.35);
+        --summary-bg: rgba(0,0,0,0.18);
+
+        /* controls */
+        --btn-primary-bg: rgba(110,231,255,0.12);
+        --btn-primary-hover-bg: rgba(110,231,255,0.16);
+        --btn-primary-border: rgba(110,231,255,0.40);
+        --btn-primary-text: var(--text);
+
+        --btn-tertiary-bg: rgba(255,255,255,0.04);
+        --btn-tertiary-hover-bg: rgba(255,255,255,0.06);
+        --btn-tertiary-border: rgba(255,255,255,0.10);
+        --btn-tertiary-text: var(--text);
+
+        --runbar-bg: linear-gradient(180deg, rgba(11,15,20,0.10), rgba(11,15,20,0.92));
+        --runbar-bg-iphone: linear-gradient(180deg, rgba(15,22,32,0.65), rgba(11,15,20,0.96));
+        --runbar-shadow: 0 -18px 40px rgba(0,0,0,0.45);
+        --runbar-blur: 6px;
+        --runbar-blur-iphone: 10px;
+      }
     }
     *, *::before, *::after { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; -webkit-text-size-adjust: 100%; }
@@ -34,16 +102,30 @@
     .hint { margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.35; }
     .section { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-2); }
 
-    label { display: block; font-size: 12px; color: #aab8c8; margin: 10px 0 6px; }
-    input { width: 100%; max-width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.25); color: var(--text); font-family: var(--mono); font-size: 13px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+    input { width: 100%; max-width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: var(--input-bg); color: var(--text); font-family: var(--mono); font-size: 13px; }
 
-    button { margin-top: 12px; width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(110,231,255,0.4); background: rgba(110,231,255,0.12); color: var(--text); cursor: pointer; font-weight: 750; }
-    button:hover { background: rgba(110,231,255,0.16); }
+    /* Buttons (theme-aware) */
+    button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-primary-border);
+      background: var(--btn-primary-bg);
+      color: var(--btn-primary-text);
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: 0.1px;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.06);
+    }
+    button:hover { background: var(--btn-primary-hover-bg); }
+    button:active { transform: translateY(0.5px); }
 
     .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
-    .btn-sm { width: auto; padding: 7px 10px; border-radius: 999px; font-weight: 750; font-size: 12px; margin: 0; }
-    .btn-tertiary { border-color: var(--border); background: rgba(255,255,255,0.04); }
-    .btn-tertiary:hover { background: rgba(255,255,255,0.06); }
+    .btn-sm { width: auto; padding: 7px 10px; border-radius: 999px; font-weight: 800; font-size: 12px; margin: 0; }
+    .btn-tertiary { border-color: var(--btn-tertiary-border); background: var(--btn-tertiary-bg); color: var(--btn-tertiary-text); }
+    .btn-tertiary:hover { background: var(--btn-tertiary-hover-bg); }
 
     .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
     .toolbar input { flex: 1; min-width: 240px; }
@@ -56,10 +138,10 @@
     }
 
     .flow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .chip { padding: 6px 8px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.10); font-size: 12px; color: var(--muted); }
+    .chip { padding: 6px 8px; border-radius: 999px; border: 1px solid var(--border); background: rgba(127,127,127,0.04); font-size: 12px; color: var(--muted); }
     .chip strong { color: var(--text); }
 
-    pre { margin: 0; padding: 12px; border-radius: 10px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); overflow: auto; font-family: var(--mono); font-size: 12px; line-height: 1.4; }
+    pre { margin: 0; padding: 12px; border-radius: 10px; background: var(--pre-bg); border: 1px solid var(--border-2); overflow: auto; font-family: var(--mono); font-size: 12px; line-height: 1.4; }
 
     details { margin-top: 10px; }
     summary { cursor: pointer; color: var(--text); font-weight: 750; font-size: 12px; }
@@ -77,7 +159,7 @@
       margin-top: 10px;
       border: 1px solid var(--border-2);
       border-radius: 12px;
-      background: rgba(0,0,0,0.18);
+      background: var(--summary-bg);
       padding: 10px;
       display: grid;
       gap: 8px;
@@ -99,11 +181,11 @@
       .runbar {
         position: sticky;
         bottom: 0;
-        background: linear-gradient(180deg, rgba(11,15,20,0.10), rgba(11,15,20,0.92));
+        background: var(--runbar-bg);
         padding: 10px 0 calc(6px + env(safe-area-inset-bottom));
         margin-top: 10px;
         z-index: 4;
-        backdrop-filter: blur(6px);
+        backdrop-filter: blur(var(--runbar-blur));
       }
       .runbar button { margin-top: 0; }
     }
@@ -138,9 +220,9 @@
         padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
         border-radius: 16px 16px 0 0;
         border: 1px solid var(--border-2);
-        background: linear-gradient(180deg, rgba(15,22,32,0.65), rgba(11,15,20,0.96));
-        box-shadow: 0 -18px 40px rgba(0,0,0,0.45);
-        backdrop-filter: blur(10px);
+        background: var(--runbar-bg-iphone);
+        box-shadow: var(--runbar-shadow);
+        backdrop-filter: blur(var(--runbar-blur-iphone));
       }
       .runbar button { width: auto; flex: 1; }
       .runbar .status { text-align: right; }
@@ -162,6 +244,27 @@
       <h2>Inputs</h2>
       <div class="hint">Pick a preset (SCALE / OBSERVE / DISABLE), then run the end-to-end pipeline. All actions are safe mocks.</div>
 
+      <details style="margin-top:10px;">
+        <summary>What happens when you tap “Run demo” (and why)</summary>
+        <div class="hint" style="margin-top:10px;">
+          This UI walks through an MVP-grade operator pipeline:
+          <br><br>
+          1) <strong>signal</strong> — ingest a (mock) market/onchain signal.
+          <br>
+          2) <strong>reason</strong> — produce a structured “decision memo” (in MVP this is an LLM JSON output).
+          <br>
+          3) <strong>risk gate</strong> — hard rules (drawdown, concentration, fee budget). No approval → no action.
+          <br>
+          4) <strong>execute</strong> — generate an execution plan (paper-only in this demo).
+          <br>
+          5) <strong>settle</strong> — record a (mock) Arc + USDC settlement intent.
+          <br>
+          6) <strong>audit</strong> — store an audit record you can fetch later by audit_id.
+          <br><br>
+          Goal: show <em>end-to-end discipline</em>, not “a chat that stops at analysis”.
+        </div>
+      </details>
+
       <div class="section">
         <div class="status" style="margin-bottom: 8px;">preset</div>
         <div class="btn-row">
@@ -181,6 +284,7 @@
 
       <label>funding_rate</label>
       <input id="funding" type="number" step="0.000001" value="0.0001" />
+      <div class="hint">What it is: exchange funding rate. Why it matters: in this demo it nudges signal strength (negative funding boosts SCALE scenario).</div>
 
       </div>
 
@@ -189,24 +293,32 @@
 
       <label>dd (drawdown 0..1)</label>
       <input id="dd" type="number" step="0.01" value="0.08" />
+      <div class="hint">Why: hard stop. If dd &gt; 0.20 20%, the agent must DISABLE (no new risk).</div>
 
       <label>top2_concentration (0..1)</label>
       <input id="top2" type="number" step="0.01" value="0.42" />
+      <div class="hint">Why: concentration risk. If top-2 positions exceed 50%, the gate forces OBSERVE.</div>
 
       <label>fee_drag (0..1)</label>
       <input id="fee" type="number" step="0.01" value="0.12" />
+      <div class="hint">Why: cost discipline. If fees consume &gt;30% of edge, the gate forces OBSERVE.</div>
 
-      <div class="hint">Tip: DISABLE triggers when dd &gt; 0.20. SCALE triggers when the signal is strong and risk is within limits.</div>
+      <div class="hint">Tip: use presets to trigger each decision path quickly for judges.</div>
 
       </div>
 
       <div class="section">
         <div class="runbar">
           <button id="run" type="button">Run demo</button>
+          <button id="judges_story" class="btn-tertiary" type="button">Judges mode: run 3 scenarios</button>
           <div class="status" style="margin-top: 0; white-space: nowrap;">
             <span id="decision_run" class="pill" style="display:none"></span>
             <span>status:</span> <span id="status">idle</span>
           </div>
+        </div>
+        <div id="judges_log" class="hint" style="margin-top:8px; display:none;"></div>
+        <div class="btn-row" style="margin-top:8px;">
+          <button id="copy_judges" class="btn-sm btn-tertiary" type="button" style="display:none;">Copy judges snippet</button>
         </div>
       </div>
 
@@ -219,13 +331,91 @@
         <div class="chip"><strong>audit</strong></div>
       </div>
 
-      
+      <div class="section">
+        <div class="status" style="margin-bottom: 8px;">traction</div>
+        <div class="hint">Judges care about <strong>real users</strong> + <strong>real decisions</strong> during the event window. This scoreboard updates from this live demo instance.</div>
+        <div class="summary" style="margin-top:10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
+          <div class="summary-row"><span class="k">EVENT WINDOW SCORE</span> <span class="v" style="color: var(--muted);">(last 10 minutes)</span></div>
+          <div class="summary-row"><span class="k">unique_users</span> <span id="ew_users" class="v">—</span></div>
+          <div class="summary-row"><span class="k">events</span> <span id="ew_events" class="v">—</span></div>
+          <div class="summary-row"><span class="k">runs</span> <span id="ew_runs" class="v">—</span></div>
+          <div class="summary-row"><span class="k">referrers</span> <span id="ew_refs" class="v">—</span></div>
+          <div class="summary-row"><span class="k">top_referrers</span> <span id="ew_toprefs" class="v">—</span></div>
+          <div class="summary-row"><span class="k">gate_overrides</span> <span id="ew_gate" class="v">—</span></div>
+          <div class="hint" style="margin-top:6px;">Interpretation: more users + more runs = traction. More gate_overrides = the AI is trying to trade, but safety rules are actively shaping outcomes.</div>
+        </div>
+        <div class="summary" style="margin-top:10px;">
+          <div class="summary-row"><span class="k">total_audits</span> <span id="t_total" class="v">—</span></div>
+          <div class="summary-row"><span class="k">runs_last_10m</span> <span id="t_10m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">runs_last_60m</span> <span id="t_60m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">events_last_10m</span> <span id="t_events_10m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">gate_overrides_last_10m</span> <span id="t_gate_10m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">unique_users_last_10m</span> <span id="t_users_10m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">unique_users_last_60m</span> <span id="t_users_60m" class="v">—</span></div>
+          <div class="summary-row"><span class="k">auto_run</span> <span id="t_auto" class="v">—</span></div>
+          <div class="summary-row"><span class="k">exposure_usd</span> <span id="t_exposure" class="v">—</span></div>
+        </div>
+        <div class="btn-row" style="margin-top:10px;">
+          <button id="refresh_stats" class="btn-sm btn-tertiary" type="button">Refresh stats</button>
+          <button id="copy_share" class="btn-sm btn-tertiary" type="button">Copy share link</button>
+          <button id="copy_invite" class="btn-sm btn-tertiary" type="button">Copy invite message</button>
+          <button id="share_tg" class="btn-sm btn-tertiary" type="button">Share via Telegram</button>
+          <button id="reset_state" class="btn-sm btn-tertiary" type="button">Reset state</button>
+          <button id="auto_toggle" class="btn-sm" type="button">Start auto-run (10s)</button>
+          <button id="auto_chaos" class="btn-sm btn-tertiary" type="button">Start auto-run (chaos)</button>
+          <button id="challenge_start" class="btn-sm" type="button">Start 60s live challenge</button>
+        </div>
+
+        <div id="challenge_box" class="summary" style="display:none; margin-top:10px;">
+          <div class="summary-row" style="justify-content: space-between;">
+            <div><strong>Live challenge</strong> <span class="k">(60s)</span></div>
+            <span id="challenge_timer" class="pill warn" style="display:inline-block;">—</span>
+          </div>
+          <div class="hint" style="margin-top:-2px;">Goal: drive <strong>real users</strong> + <strong>real decisions</strong> in the event window. This temporarily enables <code>auto-run chaos</code>.</div>
+          <div class="summary-row"><span class="k">Δ users</span> <span id="ch_du" class="v">—</span></div>
+          <div class="summary-row"><span class="k">Δ runs</span> <span id="ch_dr" class="v">—</span></div>
+          <div class="summary-row"><span class="k">Δ gate_overrides</span> <span id="ch_dg" class="v">—</span></div>
+          <div class="summary-row"><span class="k">top_referrers</span> <span id="ch_top" class="v">—</span></div>
+          <div class="btn-row" style="margin-top:8px;">
+            <button id="challenge_copy" class="btn-sm btn-tertiary" type="button" style="display:none;">Copy challenge result</button>
+          </div>
+          <div id="challenge_cta" class="hint" style="display:none; margin-top:10px;">
+            <div style="margin-bottom:6px;"><strong>Next (traction):</strong> share this demo to 3 people right now and watch <code>unique_users</code> + <code>referrers</code> move live.</div>
+            <div class="btn-row">
+              <button id="challenge_copy_invite" class="btn-sm" type="button">Copy invite message</button>
+              <button id="challenge_copy_link" class="btn-sm btn-tertiary" type="button">Copy share link</button>
+              <button id="challenge_share_tg" class="btn-sm btn-tertiary" type="button">Telegram share</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="hint" style="margin-top:8px;">
+          Auto-run boosts <strong>agentic sophistication</strong>: the agent decides repeatedly without manual clicks.
+          <br/>Chaos mode: the AI tries to <strong>break the rules</strong> (tempting SCALE signals), while the Risk Gate blocks it (see <code>gate_overrides_last_10m</code>).
+          <br/>Live challenge: show traction + agency moving <strong>live</strong> during your pitch.
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="status" style="margin-bottom: 8px;">operator feed</div>
+        <div class="hint">Live proof of <strong>real users</strong> and <strong>real decisions</strong>: page views, shares, and gate overrides (auto-refresh).</div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button id="refresh_feed" class="btn-sm btn-tertiary" type="button">Refresh feed</button>
+          <button id="copy_feed_60s" class="btn-sm btn-tertiary" type="button">Copy last 60s</button>
+        </div>
+        <pre id="feed" style="margin-top:10px; color: var(--muted); max-height: 220px; overflow:auto;">(feed will appear here)</pre>
+      </div>
+
     </section>
 
     <section class="card" id="result_card">
       <h2>Result JSON</h2>
       <div class="sub" style="margin-top:-6px; margin-bottom: 10px; color: var(--muted);">
         Primary output appears here after <strong>Run demo</strong>. Audits below are for lookup/history.
+      </div>
+
+      <div class="hint" style="margin-top:-2px;">
+        Tip for judges: focus on <strong>Summary</strong> + <strong>Risk Gate</strong>. Full JSON is there for verification.
       </div>
 
       <div id="summary" class="summary" style="display:none;">
@@ -239,7 +429,40 @@
         <div class="summary-row">
           <span class="k">audit_id</span> <span id="s_audit" class="v">—</span>
         </div>
+        <div class="summary-row">
+          <span class="k">trace_id</span> <span id="s_trace" class="v">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="k">latency_ms</span> <span id="s_latency" class="v">—</span>
+        </div>
+        <div class="summary-row">
+          <span class="k">exposure_usd</span> <span id="s_exposure" class="v">—</span>
+        </div>
         <div class="why" id="s_why">—</div>
+        <div class="hint" id="s_safety" style="margin-top:2px;">—</div>
+        <div class="hint" style="margin-top:6px;">State matters: as exposure grows, sizing scales down and an exposure cap can force OBSERVE.</div>
+      </div>
+
+      <div id="risk_view" class="summary" style="display:none;">
+        <div class="summary-row" style="justify-content: space-between;">
+          <div><strong>Risk Gate</strong> <span class="k">(hard rules)</span></div>
+          <span id="rg_badge" class="pill" style="display:none;"></span>
+        </div>
+        <div class="hint" style="margin-top:-2px;">
+          This is the key guardrail layer: even if the memo wants to trade, the gate can force OBSERVE/DISABLE.
+        </div>
+        <div id="rg_lines" class="hint" style="margin-top:10px;"></div>
+      </div>
+
+      <div id="circle_view" class="summary" style="display:none;">
+        <div class="summary-row" style="justify-content: space-between;">
+          <div><strong>Circle tools</strong> <span class="k">(usage)</span></div>
+          <span class="pill warn" style="display:inline-block;">demo</span>
+        </div>
+        <div class="hint" style="margin-top:-2px;">
+          Shows how Wallets / Gateway / CCTP / Paymaster fit the settlement path (mocked here  shapes only).
+        </div>
+        <pre id="circle_out" style="margin-top:10px; color: var(--muted);">(run demo to populate)</pre>
       </div>
 
       <pre id="out" style="display:none;">Click “Run demo” to generate an end-to-end trace.</pre>
@@ -258,13 +481,69 @@
 
       <details>
         <summary>Audit history (tap to expand)</summary>
-        <pre id="audits" style="margin-top: 10px; color: var(--muted);">(audits will appear here)</pre>
+        <div class="hint" style="margin-top:10px;">
+          Tap an item to load its audit (this simulates operator review / post-trade forensics).
+        </div>
+        <div id="audits_list" style="margin-top:10px; display:grid; gap:8px;"></div>
+        <details style="margin-top:10px;">
+          <summary>Show raw audit list JSON</summary>
+          <pre id="audits" style="margin-top: 10px; color: var(--muted);">(audits will appear here)</pre>
+        </details>
       </details>
     </section>
   </main>
 
 <script>
   const el = (id) => document.getElementById(id);
+
+  // --- traction: anonymous real-user counter (hackathon-safe, no IP storage) ---
+  function getAnonId() {
+    try {
+      const k = 'aegis_anon_id';
+      let v = localStorage.getItem(k);
+      if (!v) {
+        v = 'u_' + Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
+        localStorage.setItem(k, v);
+      }
+      return v;
+    } catch (_) {
+      return 'u_' + Math.random().toString(16).slice(2);
+    }
+  }
+
+  const ANON_ID = getAnonId();
+
+  async function track(event, meta) {
+    try {
+      await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ anon_id: ANON_ID, event, meta: meta || {} })
+      });
+    } catch (_) {
+      // non-critical
+    }
+  }
+
+  // fire-and-forget
+  const qs = new URLSearchParams(location.search || '');
+  const ref = qs.get('ref') || null;
+  track('page_view', { path: location.pathname, ref });
+
+  // Keep the traction scoreboard live (judge-friendly)
+  async function tickStats() {
+    try { await refreshStats(); } catch (_) {}
+  }
+  // Initial pull
+  setTimeout(() => { tickStats(); refreshFeed(); }, 200);
+  // Every 5s while visible
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      tickStats();
+      refreshFeed();
+    }
+  }, 5000);
+
 
   function setDecisionPill(decision) {
     const ids = ['decision_run', 'decision_result'];
@@ -306,6 +585,39 @@
       const data = await res.json();
       if (!res.ok) throw new Error(JSON.stringify(data));
       el('audits').textContent = JSON.stringify(data, null, 2);
+
+      // Render a clickable list for mobile/judges
+      const list = el('audits_list');
+      if (list) {
+        list.innerHTML = '';
+        const items = (data && data.items) ? data.items : [];
+        if (!items.length) {
+          list.innerHTML = '<div class="hint">(no audits yet — run a demo first)</div>';
+        }
+        for (const it of items) {
+          const row = document.createElement('div');
+          row.className = 'card';
+          row.style.padding = '10px';
+          row.style.borderRadius = '12px';
+          row.innerHTML = `
+            <div class="summary-row" style="justify-content: space-between;">
+              <div class="k">${it.created_at || ''}</div>
+              <div class="k">${it.symbol || ''}</div>
+            </div>
+            <div class="summary-row" style="justify-content: space-between; margin-top:6px;">
+              <div class="v" style="max-width: 72%; overflow:hidden; text-overflow: ellipsis;">${it.id}</div>
+              <button class="btn-sm" type="button" data-audit-id="${it.id}">Load</button>
+            </div>
+          `;
+          row.querySelector('button')?.addEventListener('click', async (ev) => {
+            const id = ev.currentTarget.getAttribute('data-audit-id');
+            el('audit_lookup').value = id;
+            await fetchAuditById(id);
+            try { if (window.innerWidth <= 480) el('result_card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+          });
+          list.appendChild(row);
+        }
+      }
     } catch (e) {
       el('audits').textContent = 'failed to load audits: ' + String(e);
     }
@@ -313,8 +625,376 @@
 
   el('refresh_audits').addEventListener('click', refreshAudits);
 
-  el('fetch_audit').addEventListener('click', async () => {
-    const id = el('audit_lookup').value.trim();
+  let autoEnabled = false;
+
+  async function refreshStats() {
+    try {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data));
+      // Event window scoreboard (last 10 minutes)
+      if (el('ew_users')) el('ew_users').textContent = String(data.unique_users_last_10m ?? '—');
+      if (el('ew_events')) el('ew_events').textContent = String(data.events_last_10m ?? '—');
+      if (el('ew_runs')) el('ew_runs').textContent = String(data.runs_last_10m ?? '—');
+      if (el('ew_refs')) el('ew_refs').textContent = String(data.unique_referrers_last_10m ?? '—');
+
+      // top referrers leaderboard (compact)
+      const tops = Array.isArray(data.top_referrers_last_10m) ? data.top_referrers_last_10m : [];
+      const topTxt = tops.length ? tops.map(x => `${String(x.ref).slice(0, 10)}…:${x.count}`).join('  ') : '—';
+      if (el('ew_toprefs')) el('ew_toprefs').textContent = topTxt;
+
+      if (el('ew_gate')) el('ew_gate').textContent = String(data.gate_overrides_last_10m ?? '—');
+
+      // Detailed traction panel
+      if (el('t_total')) el('t_total').textContent = String(data.total_audits ?? '—');
+      if (el('t_10m')) el('t_10m').textContent = String(data.runs_last_10m ?? '—');
+      if (el('t_60m')) el('t_60m').textContent = String(data.runs_last_60m ?? '—');
+      if (el('t_events_10m')) el('t_events_10m').textContent = String(data.events_last_10m ?? '—');
+      if (el('t_gate_10m')) el('t_gate_10m').textContent = String(data.gate_overrides_last_10m ?? '—');
+      if (el('t_users_10m')) el('t_users_10m').textContent = String(data.unique_users_last_10m ?? '—');
+      if (el('t_users_60m')) el('t_users_60m').textContent = String(data.unique_users_last_60m ?? '—');
+
+      const p = data.portfolio || null;
+      if (p && el('t_exposure')) el('t_exposure').textContent = String(p.exposure_usd ?? '—');
+
+      const a = data.auto || null;
+      if (a) {
+        autoEnabled = !!a.enabled;
+        if (el('t_auto')) el('t_auto').textContent = `${a.enabled ? 'on' : 'off'} · every ${a.interval_s}s · ticks ${a.total_ticks}`;
+        const btn = el('auto_toggle');
+        if (btn) btn.textContent = a.enabled ? 'Stop auto-run' : 'Start auto-run (10s)';
+      }
+    } catch (e) {
+      // non-critical
+    }
+  }
+
+  el('refresh_stats')?.addEventListener('click', refreshStats);
+
+  // Operator feed: recent events (page views, shares, gate overrides)
+  async function refreshFeed(seconds) {
+    try {
+      const url = seconds ? `/api/events?limit=50&seconds=${encodeURIComponent(seconds)}` : '/api/events?limit=30';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok) throw new Error(JSON.stringify(data));
+      const items = (data && data.items) ? data.items : [];
+      const lines = [];
+      for (const it of items) {
+        const t = (it.created_at || '').replace('T', ' ').replace('+00:00','Z');
+        const ev = it.event || '';
+        const a = it.anon_id ? String(it.anon_id).slice(0, 10) + '…' : '';
+        const m = it.meta || {};
+
+        // Visual encoding (works in <pre> too):
+        // ✅ traction, 🧠 decisions, ⛔ safety blocks
+        let tag = '•';
+        if (ev === 'page_view') tag = '👤';
+        if (ev.includes('share') || ev.includes('invite')) tag = '📣';
+        if (ev === 'gate_override') tag = '⛔';
+        if (ev === 'challenge_completed') tag = '🏁';
+
+        let extra = '';
+        if (ev === 'page_view' && m.ref) extra = ` ref=${String(m.ref).slice(0, 10)}…`;
+        if (ev === 'gate_override') {
+          const dec = m.decision ? String(m.decision) : '';
+          const rs = Array.isArray(m.reasons) ? m.reasons.join('; ') : '';
+          extra = ` -> ${dec}${rs ? ' | ' + rs : ''}`;
+        }
+
+        lines.push(`${tag} ${t}  ${ev}  ${a}${extra}`);
+      }
+      const box = el('feed');
+      if (box) box.textContent = lines.length ? lines.join('\n') : '(no events yet)';
+      return lines.join('\n');
+    } catch (e) {
+      const box = el('feed');
+      if (box) box.textContent = 'failed to load feed: ' + String(e);
+      return '';
+    }
+  }
+
+  el('refresh_feed')?.addEventListener('click', () => refreshFeed());
+
+  el('copy_feed_60s')?.addEventListener('click', async () => {
+    const text = await refreshFeed(60);
+    if (!text) return;
+    const header = 'Aegis Operator Feed (last 60s):\n';
+    const msg = header + text;
+    try {
+      await navigator.clipboard.writeText(msg);
+      el('status').textContent = 'copied feed (60s)';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied feed (60s)') el('status').textContent = 'idle';
+      }, 1200);
+      track('feed_60s_copied', {});
+    } catch (_) {}
+  });
+
+  // Traction: copy share link to bring real users during event window
+  function shareUrl() {
+    const base = location.origin + location.pathname;
+    return base + `?ref=${encodeURIComponent(ANON_ID)}`;
+  }
+
+  el('copy_share')?.addEventListener('click', async () => {
+    const url = shareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      el('status').textContent = 'copied share link';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied share link') el('status').textContent = 'idle';
+      }, 1200);
+    } catch (_) {
+      // fallback: show it in audit lookup box for easy copy
+      const box = el('audit_lookup');
+      if (box) box.value = url;
+    }
+    track('share_link_copied', { ref: ANON_ID });
+  });
+
+  // Traction: ready-to-send invite message (viral loop in the event window)
+  function buildInviteMessage() {
+    const url = shareUrl();
+    return [
+      'Aegis Market Operator demo (2 taps):',
+      '1) Open the link and hit “Judges mode” or “Chaos auto-run”',
+      '2) Watch Event Window Score (users/runs/gate_overrides, referrers) update live',
+      url
+    ].join('\n');
+  }
+
+  async function copyInviteMessage() {
+    const msg = buildInviteMessage();
+    try {
+      await navigator.clipboard.writeText(msg);
+      el('status').textContent = 'copied invite message';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied invite message') el('status').textContent = 'idle';
+      }, 1200);
+    } catch (_) {
+      const box = el('audit_lookup');
+      if (box) box.value = msg.slice(0, 240);
+    }
+    track('invite_message_copied', { ref: ANON_ID });
+  }
+
+  function shareViaTelegram() {
+    const url = shareUrl();
+    const text = buildInviteMessage();
+    // Use Telegram's universal share URL (works on iOS Safari + desktop)
+    const tg = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text);
+    try {
+      window.open(tg, '_blank', 'noopener,noreferrer');
+    } catch (_) {
+      location.href = tg;
+    }
+    track('share_via_telegram', { ref: ANON_ID });
+  }
+
+  el('copy_invite')?.addEventListener('click', copyInviteMessage);
+  el('share_tg')?.addEventListener('click', shareViaTelegram);
+
+  el('reset_state')?.addEventListener('click', async () => {
+    try {
+      await fetch('/api/state/reset', { method: 'POST' });
+    } catch (e) {}
+    await refreshStats();
+    await refreshAudits();
+  });
+
+  async function setAuto(mode) {
+    try {
+      if (!autoEnabled) {
+        await fetch('/api/auto/start', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ interval_s: 10, mode })
+        });
+      } else {
+        await fetch('/api/auto/stop', { method: 'POST' });
+      }
+    } catch (e) {
+      // ignore
+    }
+    await refreshStats();
+    await refreshAudits();
+  }
+
+  el('auto_toggle')?.addEventListener('click', async () => {
+    // default: mixed story (scale/disable/observe)
+    await setAuto('mixed');
+  });
+
+  el('auto_chaos')?.addEventListener('click', async () => {
+    // chaos: tries to break rules; gate blocks; counted in gate_overrides
+    await setAuto('chaos');
+  });
+
+  // --- Live challenge (60s): maximize traction + agency in the event window ---
+  let challengeActive = false;
+  let challengeT0 = 0;
+  let challengeBaseline = null;
+  let challengeTimer = null;
+
+  async function fetchStatsRaw() {
+    const res = await fetch('/api/stats');
+    const data = await res.json();
+    if (!res.ok) throw new Error(JSON.stringify(data));
+    return data;
+  }
+
+  function setCh(id, v) {
+    const e = el(id);
+    if (e) e.textContent = String(v);
+  }
+
+  function fmtTopReferrers(arr) {
+    const tops = Array.isArray(arr) ? arr : [];
+    if (!tops.length) return '—';
+    return tops.map(x => `${String(x.ref).slice(0, 10)}…:${x.count}`).join('  ');
+  }
+
+  async function stopChallenge(finalize) {
+    challengeActive = false;
+    if (challengeTimer) {
+      clearInterval(challengeTimer);
+      challengeTimer = null;
+    }
+    // stop auto-run if it is on
+    try { await fetch('/api/auto/stop', { method: 'POST' }); } catch (_) {}
+
+    const btn = el('challenge_start');
+    if (btn) btn.textContent = 'Start 60s live challenge';
+
+    if (finalize) {
+      try {
+        const now = await fetchStatsRaw();
+        const b = challengeBaseline || {};
+        const du = (now.unique_users_last_10m ?? 0) - (b.unique_users_last_10m ?? 0);
+        const dr = (now.runs_last_10m ?? 0) - (b.runs_last_10m ?? 0);
+        const dg = (now.gate_overrides_last_10m ?? 0) - (b.gate_overrides_last_10m ?? 0);
+        setCh('ch_du', du);
+        setCh('ch_dr', dr);
+        setCh('ch_dg', dg);
+        setCh('ch_top', fmtTopReferrers(now.top_referrers_last_10m));
+        const copy = el('challenge_copy');
+        if (copy) copy.style.display = 'inline-flex';
+        const cta = el('challenge_cta');
+        if (cta) cta.style.display = 'block';
+      } catch (_) {}
+    }
+  }
+
+  el('challenge_start')?.addEventListener('click', async () => {
+    const box = el('challenge_box');
+    const timerPill = el('challenge_timer');
+    const copy = el('challenge_copy');
+    if (copy) copy.style.display = 'none';
+    const cta = el('challenge_cta');
+    if (cta) cta.style.display = 'none';
+
+    if (challengeActive) {
+      // manual stop
+      await stopChallenge(true);
+      return;
+    }
+
+    challengeActive = true;
+    challengeT0 = Date.now();
+    if (box) box.style.display = 'grid';
+    if (timerPill) { timerPill.textContent = '60s'; timerPill.className = 'pill warn'; }
+    const btn = el('challenge_start');
+    if (btn) btn.textContent = 'Stop challenge';
+    track('challenge_started', { mode: 'chaos', seconds: 60 });
+
+    // Keep it comparable: reset state before we generate runs
+    try { await fetch('/api/state/reset', { method: 'POST' }); } catch (_) {}
+
+    // baseline stats
+    try { challengeBaseline = await fetchStatsRaw(); } catch (_) { challengeBaseline = null; }
+
+    // ensure auto-run is off, then start chaos with faster interval (3s)
+    try { await fetch('/api/auto/stop', { method: 'POST' }); } catch (_) {}
+    try {
+      await fetch('/api/auto/start', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ interval_s: 3, mode: 'chaos' })
+      });
+    } catch (_) {}
+
+    // live progress loop
+    challengeTimer = setInterval(async () => {
+      const elapsed = Math.floor((Date.now() - challengeT0) / 1000);
+      const left = Math.max(0, 60 - elapsed);
+      if (timerPill) timerPill.textContent = `${left}s`;
+      try {
+        const now = await fetchStatsRaw();
+        const b = challengeBaseline || {};
+        setCh('ch_du', (now.unique_users_last_10m ?? 0) - (b.unique_users_last_10m ?? 0));
+        setCh('ch_dr', (now.runs_last_10m ?? 0) - (b.runs_last_10m ?? 0));
+        setCh('ch_dg', (now.gate_overrides_last_10m ?? 0) - (b.gate_overrides_last_10m ?? 0));
+        setCh('ch_top', fmtTopReferrers(now.top_referrers_last_10m));
+      } catch (_) {}
+
+      if (left <= 0) {
+        if (timerPill) { timerPill.textContent = 'done'; timerPill.className = 'pill ok'; }
+        await stopChallenge(true);
+        track('challenge_completed', { seconds: 60 });
+      }
+    }, 1000);
+  });
+
+  el('challenge_copy')?.addEventListener('click', async () => {
+    try {
+      const du = (el('ch_du')?.textContent || '0').trim();
+      const dr = (el('ch_dr')?.textContent || '0').trim();
+      const dg = (el('ch_dg')?.textContent || '0').trim();
+      const top = (el('ch_top')?.textContent || '—').trim();
+      const msg = [
+        'Aegis Live Challenge (60s) results:',
+        `Δ users: ${du}`,
+        `Δ runs: ${dr}`,
+        `Δ gate_overrides: ${dg}`,
+        `top_referrers: ${top}`,
+      ].join('\n');
+      await navigator.clipboard.writeText(msg);
+      el('status').textContent = 'copied challenge result';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied challenge result') el('status').textContent = 'idle';
+      }, 1200);
+      track('challenge_result_copied', {});
+    } catch (_) {}
+  });
+
+  // Challenge CTA: copy invite / link right after the run
+  el('challenge_copy_invite')?.addEventListener('click', async () => {
+    await copyInviteMessage();
+    track('challenge_invite_copied', {});
+  });
+
+  el('challenge_copy_link')?.addEventListener('click', async () => {
+    const url = shareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      el('status').textContent = 'copied share link';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied share link') el('status').textContent = 'idle';
+      }, 1200);
+    } catch (_) {
+      const box = el('audit_lookup');
+      if (box) box.value = url;
+    }
+    track('challenge_share_link_copied', { ref: ANON_ID });
+  });
+
+  el('challenge_share_tg')?.addEventListener('click', async () => {
+    shareViaTelegram();
+    track('challenge_share_via_telegram', {});
+  });
+
+  async function fetchAuditById(id) {
     if (!id) return;
     try {
       const res = await fetch('/api/audit/' + id);
@@ -323,12 +1003,20 @@
       el('out').textContent = JSON.stringify(data.result, null, 2);
       el('audit_id').textContent = data.id;
       el('copy_audit').style.display = 'inline-flex';
-      setDecisionPill((data.result && data.result.risk && data.result.risk.decision) || 'OBSERVE');
+      const decision = (data.result && data.result.risk && data.result.risk.decision) || 'OBSERVE';
+      setDecisionPill(decision);
       setSummaryFromResult({ ...(data.result || {}), audit_id: data.id });
+      setRiskViewFromResult({ ...(data.result || {}), audit_id: data.id });
+      setCircleViewFromResult({ ...(data.result || {}), audit_id: data.id });
       setJsonVisible(false);
     } catch (e) {
       el('out').textContent = String(e);
     }
+  }
+
+  el('fetch_audit').addEventListener('click', async () => {
+    const id = el('audit_lookup').value.trim();
+    await fetchAuditById(id);
   });
 
   // Summary + JSON toggle
@@ -359,7 +1047,118 @@
     el('s_audit').textContent = result?.audit_id || '—';
     el('s_why').textContent = why;
 
+    // observability
+    el('s_trace').textContent = result?.trace_id || '—';
+    const total = (result?.timings_ms && (result.timings_ms.total ?? result.timings_ms.total_ms)) ?? null;
+    const parts = [];
+    if (result?.timings_ms) {
+      const t = result.timings_ms;
+      if (t.signal != null) parts.push(`signal ${t.signal}`);
+      if (t.memo != null) parts.push(`memo ${t.memo}`);
+      if (t.risk_gate != null) parts.push(`risk ${t.risk_gate}`);
+      if (t.execution != null) parts.push(`exec ${t.execution}`);
+      if (t.settlement != null) parts.push(`settle ${t.settlement}`);
+    }
+    el('s_latency').textContent = total != null ? `${total} ( ${parts.join(' · ')} )` : (parts.length ? parts.join(' · ') : '—');
+
+    // state (portfolio)
+    const st = result?.state || null;
+    if (el('s_exposure')) el('s_exposure').textContent = st && st.exposure_usd != null ? String(st.exposure_usd) : '—';
+
+    // safety note
+    const s = result?.safety;
+    el('s_safety').textContent = s?.note ? `Safety: ${s.note}` : 'Safety: demo mode (no real orders / no real funds moved).';
+
     el('summary').style.display = 'grid';
+  }
+
+  function setRiskViewFromResult(result) {
+    const risk = result?.risk || {};
+    const limits = risk?.limits || {};
+    const input = result?.input || {};
+    const lines = [];
+    const pass = (ok, text) => `${ok ? '✅' : '❌'} ${text}`;
+
+    if (limits.dd_disable != null && input.dd != null) {
+      const ok = Number(input.dd) <= Number(limits.dd_disable);
+      lines.push(pass(ok, `Drawdown dd=${Number(input.dd).toFixed(2)} ≤ ${Number(limits.dd_disable).toFixed(2)} (else DISABLE)`));
+    }
+    if (limits.top2_concentration_reduce != null && input.top2_concentration != null) {
+      const ok = Number(input.top2_concentration) <= Number(limits.top2_concentration_reduce);
+      lines.push(pass(ok, `Top-2 concentration=${Number(input.top2_concentration).toFixed(2)} ≤ ${Number(limits.top2_concentration_reduce).toFixed(2)} (else OBSERVE)`));
+    }
+    if (limits.fee_drag_pause != null && input.fee_drag != null) {
+      const ok = Number(input.fee_drag) <= Number(limits.fee_drag_pause);
+      lines.push(pass(ok, `Fee drag=${Number(input.fee_drag).toFixed(2)} ≤ ${Number(limits.fee_drag_pause).toFixed(2)} (else OBSERVE)`));
+    }
+
+    // state-aware rule
+    const st = result?.state || null;
+    if (limits.max_exposure_usd != null && st && st.exposure_usd != null) {
+      const ok = Number(st.exposure_usd) <= Number(limits.max_exposure_usd);
+      lines.push(pass(ok, `Exposure cap: exposure_usd=${Number(st.exposure_usd)} ≤ ${Number(limits.max_exposure_usd)} (else OBSERVE)`));
+    }
+
+    const decision = risk?.decision || 'OBSERVE';
+    const badge = el('rg_badge');
+    if (badge) {
+      badge.style.display = 'inline-block';
+      badge.textContent = decision;
+      badge.className = 'pill ' + (decision === 'SCALE' ? 'ok' : decision === 'OBSERVE' ? 'warn' : 'bad');
+    }
+
+    const rg = el('risk_view');
+    if (rg) rg.style.display = 'grid';
+    const rgLines = el('rg_lines');
+    if (rgLines) {
+      rgLines.innerHTML = lines.length ? lines.map(x => `<div>${x}</div>`).join('') : '<div class="hint">(no risk data)</div>';
+    }
+  }
+
+  function setCircleViewFromResult(result) {
+    try {
+      const ct = result?.settlement?.circle_tools || null;
+      const box = el('circle_out');
+      const wrap = el('circle_view');
+      if (!box || !wrap) return;
+      if (!ct) {
+        wrap.style.display = 'none';
+        return;
+      }
+      wrap.style.display = 'grid';
+
+      // Pretty render: show a readable plan first, then raw JSON
+      const lines = [];
+      if (ct.assets) {
+        lines.push('ASSETS');
+        lines.push(`- primary: ${ct.assets.primary || ''}`);
+        lines.push(`- alt: ${ct.assets.alt || ''}`);
+        if (ct.assets.why_usdc) lines.push(`- why USDC: ${ct.assets.why_usdc}`);
+        if (ct.assets.why_usyc) lines.push(`- why USYC: ${ct.assets.why_usyc}`);
+        lines.push('');
+      }
+      const mk = (name, obj) => {
+        if (!obj) return;
+        lines.push(name.toUpperCase());
+        if (obj.api) lines.push(`- api: ${obj.api}`);
+        if (obj.status) lines.push(`- status: ${obj.status}`);
+        if (obj.example_calls && obj.example_calls.length) {
+          lines.push(`- example_calls: ${obj.example_calls.length}`);
+          for (const c of obj.example_calls.slice(0, 3)) {
+            lines.push(`  • ${c.name || ''} ${c.method || ''} ${c.path || c.target || ''}`);
+          }
+        }
+        lines.push('');
+      };
+      mk('wallets', ct.wallets);
+      mk('gateway', ct.gateway);
+      mk('cctp', ct.cctp);
+      mk('paymaster', ct.paymaster);
+
+      const pretty = lines.join('\n').trim();
+      const raw = JSON.stringify(ct, null, 2);
+      box.textContent = (pretty ? pretty + '\n\n--- RAW ---\n' : '') + raw;
+    } catch (_) {}
   }
 
   // Copy audit_id convenience
@@ -378,7 +1177,27 @@
     }
   });
 
+  // Copy judges snippet convenience
+  el('copy_judges')?.addEventListener('click', async () => {
+    const log = el('judges_log');
+    const txt = (log && log.textContent) ? log.textContent.trim() : '';
+    if (!txt) return;
+    try {
+      await navigator.clipboard.writeText(txt);
+      el('status').textContent = 'copied judges snippet';
+      setTimeout(() => {
+        if (el('status').textContent === 'copied judges snippet') el('status').textContent = 'idle';
+      }, 1200);
+    } catch (_) {
+      // fallback: show it in audit lookup for easy manual copy
+      const box = el('audit_lookup');
+      if (box) box.value = txt.slice(0, 240);
+    }
+    track('judges_snippet_copied', {});
+  });
+
   el('run').addEventListener('click', async () => {
+    track('run_clicked', { source: 'manual' });
     el('status').textContent = 'running...';
     if (el('decision_run')) el('decision_run').style.display = 'none';
     if (el('decision_result')) el('decision_result').style.display = 'none';
@@ -410,6 +1229,8 @@
       el('status').textContent = 'ok';
       setDecisionPill(data.risk.decision);
       setSummaryFromResult(data);
+      setRiskViewFromResult(data);
+      setCircleViewFromResult(data);
       setJsonVisible(false);
       // On iPhone, jump user to the summary/result (demo-friendly)
       try { if (window.innerWidth <= 480) el('result_card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
@@ -420,8 +1241,78 @@
     }
   });
 
+  async function runOne(payload) {
+    const res = await fetch('/api/run_demo', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(JSON.stringify(data));
+    return data;
+  }
+
+  function fmtRun(label, data) {
+    const d = data?.risk?.decision || '—';
+    const st = data?.state?.exposure_usd != null ? data.state.exposure_usd : '—';
+    const order = (data?.execution?.orders && data.execution.orders[0]) || null;
+    const sz = order?.notional_usd != null ? order.notional_usd : '—';
+    const why = (data?.risk?.reasons || []).slice(0, 1).join('') || (data?.memo?.proposed_action || '');
+    return `• ${label}: decision=${d}, size=${sz}, exposure=${st} — ${why}`;
+  }
+
+  el('judges_story')?.addEventListener('click', async () => {
+    track('judges_mode_clicked', {});
+    const log = el('judges_log');
+    const copyBtn = el('copy_judges');
+    if (copyBtn) copyBtn.style.display = 'none';
+    if (log) { log.style.display = 'block'; log.textContent = 'Running judges story (3 runs)...'; }
+    el('status').textContent = 'judges mode...';
+    try {
+      // Make runs comparable: reset state first
+      try { await fetch('/api/state/reset', { method: 'POST' }); } catch (_) {}
+
+      const steps = [
+        ['OBSERVE baseline', PRESETS.OBSERVE],
+        ['SCALE attempt', PRESETS.SCALE],
+        ['DISABLE (dd>20%)', PRESETS.DISABLE],
+      ];
+
+      const lines = [];
+      let last = null;
+      for (const [label, payload] of steps) {
+        last = await runOne(payload);
+        lines.push(fmtRun(label, last));
+        await new Promise(r => setTimeout(r, 250));
+      }
+
+      // Show the last run in main panels
+      el('out').textContent = JSON.stringify(last, null, 2);
+      el('audit_id').textContent = last.audit_id;
+      el('audit_lookup').value = last.audit_id;
+      el('copy_audit').style.display = 'inline-flex';
+      setDecisionPill(last.risk.decision);
+      setSummaryFromResult(last);
+      setRiskViewFromResult(last);
+      setCircleViewFromResult(last);
+      setJsonVisible(false);
+
+      if (log) log.textContent = 'Judges story complete:\n' + lines.join('\n');
+      if (copyBtn) copyBtn.style.display = 'inline-flex';
+
+      try { if (window.innerWidth <= 480) el('result_card').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+      await refreshAudits();
+      await refreshStats();
+      el('status').textContent = 'ok';
+    } catch (e) {
+      el('status').textContent = 'error';
+      if (log) log.textContent = 'Judges story failed: ' + String(e);
+    }
+  });
+
   // initial load
   refreshAudits();
+  refreshStats();
   setInputs(PRESETS.OBSERVE);
 
   // For QA / screenshots: allow auto-scroll via query string.
