@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -243,6 +243,13 @@ agora_demo_up 1
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
     return (APP_DIR / "static" / "index.html").read_text(encoding="utf-8")
+
+
+# Some uptime checkers hit HEAD /. FastAPI doesn't always auto-add it for this route,
+# so we provide it explicitly (no body).
+@app.head("/")
+def index_head() -> Response:
+    return Response(status_code=200, media_type="text/html")
 
 
 def _run_arc(args: list[str], timeout_s: int = 10) -> dict:
