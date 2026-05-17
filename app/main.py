@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response, Request
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
@@ -258,16 +258,23 @@ def _run_arc(args: list[str], timeout_s: int = 10) -> dict:
     We avoid any command that could leak creds. Do NOT call `login` here.
     """
     try:
+        # IMPORTANT: arc-canteen (httpx) may pick up ALL_PROXY/HTTP(S)_PROXY from env.
+        # For this demo we explicitly disable proxies to avoid socks/httpx extra deps
+        # and to keep behaviour deterministic.
+        clean_env = {
+            **os.environ,
+            "ALL_PROXY": "",
+            "HTTP_PROXY": "",
+            "HTTPS_PROXY": "",
+            "NO_PROXY": "127.0.0.1,localhost",
+        }
+
         proc = subprocess.run(
             args,
             capture_output=True,
             text=True,
             timeout=timeout_s,
-            env={
-                **os.environ,
-                # ensure localhost calls aren't hijacked by ALL_PROXY
-                "NO_PROXY": "127.0.0.1,localhost",
-            },
+            env=clean_env,
         )
         out = (proc.stdout or "")[-4000:]
         err = (proc.stderr or "")[-2000:]
@@ -281,6 +288,81 @@ def _run_arc(args: list[str], timeout_s: int = 10) -> dict:
         return {"ok": False, "error": "arc-canteen not installed"}
     except subprocess.TimeoutExpired:
         return {"ok": False, "error": f"arc-canteen timeout after {timeout_s}s"}
+
+
+def _truthy_env(name: str) -> bool:
+    v = (os.environ.get(name) or "").strip().lower()
+    return v in {"1", "true", "yes", "on"}
+
+
+@app.get("/api/arc/live")
+def arc_live(request: Request) -> dict:
+    """Optional live Arc RPC proof (safe-by-default).
+
+    Disabled unless ARC_LIVE_PROOF=1.
+
+    Security:
+    - Never returns RPC URLs/tokens.
+    - If ARC_LIVE_KEY is set, require `?k=<key>` or header `x-arc-live-key`.
+      (If missing/wrong, we return a generic safe-default response.)
+    """
+
+    enabled = _truthy_env("ARC_LIVE_PROOF")
+    key = (os.environ.get("ARC_LIVE_KEY") or "").strip() or None
+
+    if key:
+        provided = (request.query_params.get("k") or "").strip() or (request.headers.get("x-arc-live-key") or "").strip()
+        if provided != key:
+            return {"enabled": False, "mode": "safe", "ok": True, "note": "live proof disabled"}
+
+    if not enabled:
+        return {
+            "enabled": False,
+            "mode": "safe",
+            "ok": True,
+            "note": "Set ARC_LIVE_PROOF=1 to enable live Arc RPC proof (for judges/video).",
+        }
+
+    t0 = time.time()
+    chain = _run_arc(["arc-canteen", "rpc", "eth_chainId"], timeout_s=10)
+    block = _run_arc(["arc-canteen", "rpc", "eth_blockNumber"], timeout_s=10)
+    latency_ms = int((time.time() - t0) * 1000)
+
+    if not chain.get("ok") or not block.get("ok"):
+        return {
+            "enabled": True,
+            "mode": "live",
+            "ok": False,
+            "latency_ms": latency_ms,
+            "error": "arc-canteen rpc failed (check `arc-canteen login` / network)",
+        }
+
+    def _first_line(s: str) -> str:
+        return (s or "").strip().splitlines()[0].strip()
+
+    def _parse_hex(x: str) -> Optional[int]:
+        try:
+            x = (x or "").strip()
+            if not x:
+                return None
+            if x.startswith("0x"):
+                return int(x, 16)
+            return int(x)
+        except Exception:
+            return None
+
+    chain_id = _parse_hex(_first_line(chain.get("stdout") or ""))
+    block_number = _parse_hex(_first_line(block.get("stdout") or ""))
+
+    return {
+        "enabled": True,
+        "mode": "live",
+        "ok": (chain_id is not None and block_number is not None),
+        "chain_id": chain_id,
+        "block_number": block_number,
+        "latency_ms": latency_ms,
+        "note": "Live proof uses `arc-canteen rpc` and never returns RPC URLs/tokens.",
+    }
 
 
 @app.get("/api/arc/info")

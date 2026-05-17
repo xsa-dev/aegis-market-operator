@@ -460,9 +460,23 @@
           <span class="pill warn" style="display:inline-block;">demo</span>
         </div>
         <div class="hint" style="margin-top:-2px;">
-          Shows how Wallets / Gateway / CCTP / Paymaster fit the settlement path (mocked here  shapes only).
+          Shows how Wallets / Gateway / CCTP / Paymaster fit the settlement path (mocked here — shapes only).
         </div>
         <pre id="circle_out" style="margin-top:10px; color: var(--muted);">(run demo to populate)</pre>
+      </div>
+
+      <div id="arc_live_view" class="summary" style="display:none;">
+        <div class="summary-row" style="justify-content: space-between;">
+          <div><strong>Arc live proof</strong> <span class="k">(optional)</span></div>
+          <span id="arc_live_badge" class="pill" style="display:none;"></span>
+        </div>
+        <div class="hint" id="arc_live_hint" style="margin-top:-2px;">
+          Disabled by default for public demos. For judges/video, enable server flag <code>ARC_LIVE_PROOF=1</code>.
+        </div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button id="arc_live_refresh" class="btn-sm btn-tertiary" type="button">Refresh live proof</button>
+        </div>
+        <pre id="arc_live_out" style="margin-top:10px; color: var(--muted);">(not loaded)</pre>
       </div>
 
       <pre id="out" style="display:none;">Click “Run demo” to generate an end-to-end trace.</pre>
@@ -670,6 +684,60 @@
   }
 
   el('refresh_stats')?.addEventListener('click', refreshStats);
+
+  // Arc live proof (optional): safe-by-default, enabled via server flag.
+  async function refreshArcLive() {
+    const box = el('arc_live_out');
+    const badge = el('arc_live_badge');
+    const hint = el('arc_live_hint');
+    try {
+      if (box) box.textContent = '(loading…)';
+      const res = await fetch('/api/arc/live');
+      const data = await res.json();
+
+      // Always show the panel once user interacts
+      if (el('arc_live_view')) el('arc_live_view').style.display = 'grid';
+
+      const enabled = !!data.enabled;
+      const ok = !!data.ok;
+      const mode = data.mode || (enabled ? 'live' : 'safe');
+
+      if (badge) {
+        badge.style.display = 'inline-block';
+        badge.className = 'pill ' + (enabled && ok ? 'ok' : enabled && !ok ? 'warn' : 'warn');
+        badge.textContent = enabled ? (ok ? 'live' : 'enabled (error)') : 'safe default';
+      }
+
+      if (hint) {
+        hint.innerHTML = enabled
+          ? ('Live proof is enabled on the server. This endpoint never returns RPC URLs/tokens.')
+          : ('Disabled by default for public demos. For judges/video, enable server flag <code>ARC_LIVE_PROOF=1</code>.');
+      }
+
+      if (box) {
+        const view = {
+          enabled,
+          mode,
+          ok,
+          chain_id: data.chain_id ?? null,
+          block_number: data.block_number ?? null,
+          latency_ms: data.latency_ms ?? null,
+          note: data.note ?? null,
+          error: data.error ?? null
+        };
+        box.textContent = JSON.stringify(view, null, 2);
+      }
+    } catch (e) {
+      if (box) box.textContent = 'failed to load /api/arc/live: ' + String(e);
+      if (badge) {
+        badge.style.display = 'inline-block';
+        badge.className = 'pill warn';
+        badge.textContent = 'unavailable';
+      }
+    }
+  }
+
+  el('arc_live_refresh')?.addEventListener('click', refreshArcLive);
 
   // Operator feed: recent events (page views, shares, gate overrides)
   async function refreshFeed(seconds) {
